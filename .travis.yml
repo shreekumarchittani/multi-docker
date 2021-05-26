@@ -1,0 +1,25 @@
+sudo: required
+services:
+   - docker
+
+before_install:
+   - docker build -t shreechit/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+   - docker run -e CI=true shreechit/react-test npm test 
+
+after_success:
+   - docker build -t shreechit/multi-client ./client
+   - docker build -t shreechit/multi-nginx ./nginx
+   - docker build -t shreechit/multi-server ./server
+   - docker build -t shreechit/multi-worker ./worker
+  # Login to docker cli
+   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take the images nad push to dockerhub
+   - docker push shreechit/multi-client
+   - docker push shreechit/multi-nginx
+   - docker push shreechit/multi-server
+   - docker push shreechit/multi-worker
+
+
+
